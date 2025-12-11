@@ -1,37 +1,86 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { HiMenu, HiX } from "react-icons/hi";
+import { FiHeart, FiShoppingBag, FiUser } from "react-icons/fi";
 
 const Navbar = () => {
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
+
+  const handleUserIcon = () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
-      <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">ReWear</Link>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navMenu">
-          <ul className="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center">
-            <li className="nav-item">
-              <Link className="nav-link" to="/dashboard">Dashboard</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/add-item">Add Item</Link>
-            </li>
-          
- <li className="nav-item">
-              <Link className="nav-link" to="/browse">Browse Items</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/admin">Admin</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="btn btn-outline-light btn-sm ms-2" to="/login">Login</Link>
-            </li>
-          </ul>
+    <nav className="w-full bg-white border-b shadow-sm fixed top-0 left-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+
+        {/* LOGO */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-[#d46b4a] rounded-full flex items-center justify-center text-white font-bold">
+            R
+          </div>
+          <span className="text-xl font-semibold text-gray-800">Re–Wear</span>
+        </Link>
+
+        {/* Desktop Menu */}
+        <ul className="hidden md:flex items-center space-x-10 font-medium text-gray-700">
+          <MenuItem label="Explore" to="/browse" />
+          <MenuItem label="Categories" to="/categories" />
+          <MenuItem label="How it Works" to="/how-it-works" />
+        </ul>
+
+        {/* Search Bar */}
+        <input
+          type="text"
+          placeholder="Search items, brands..."
+          className="hidden md:block w-72 bg-gray-100 px-4 py-2 rounded-xl text-gray-700 outline-none"
+        />
+
+        {/* ACTION ICONS */}
+        <div className="hidden md:flex items-center space-x-6 text-gray-700">
+
+          <FiHeart className="text-2xl cursor-pointer" onClick={() => navigate("/wishlist")} />
+          <FiShoppingBag className="text-2xl cursor-pointer" onClick={() => navigate("/orders")} />
+
+          {/* ➤ FIXED USER ICON LOGIC */}
+          <FiUser
+            className="text-2xl cursor-pointer hover:text-black"
+            onClick={handleUserIcon}
+          />
+
+          {/* SELL BUTTON */}
+          <Link
+            to="/add-item"
+            className="bg-[#d46b4a] hover:bg-[#bf5839] text-white px-4 py-2 rounded-lg font-medium shadow"
+          >
+            + Sell
+          </Link>
         </div>
+
+        {/* Mobile menu toggle */}
+        <button className="md:hidden text-3xl" onClick={() => setOpen(!open)}>
+          {open ? <HiX /> : <HiMenu />}
+        </button>
       </div>
     </nav>
   );
 };
+
+const MenuItem = ({ label, to }) => (
+  <li>
+    <Link to={to} className="hover:text-black transition">{label}</Link>
+  </li>
+);
 
 export default Navbar;

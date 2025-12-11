@@ -1,74 +1,92 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
 
+<<<<<<< HEAD
     try {
       const res = await axios.post('http://localhost:5000/api/auth/register', {
         name: form.name,
         email: form.email,
         password: form.password,
       });
+=======
+    const res = await fetch("https://rewear-z7yj.onrender.com/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+>>>>>>> 9cdeb9a (Update frontend)
 
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/dashboard');
-    } catch (err) {
-      alert(err.response?.data?.msg || 'Registration failed');
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Account created successfully!");
+      navigate("/login");
+    } else {
+      alert(data.msg || "Registration failed");
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <div className="card p-4 shadow" style={{ width: '100%', maxWidth: '450px' }}>
-        <h3 className="text-center mb-4">Register for ReWear</h3>
-        <form onSubmit={handleRegister}>
-          <div className="mb-3">
-            <label className="form-label">Full Name</label>
-            <input type="text" className="form-control" name="name" required onChange={handleChange} />
-          </div>
+    <div className="pt-28 min-h-screen bg-gray-50 flex justify-center px-4">
+      <div className="bg-white w-full max-w-lg p-10 rounded-2xl shadow-xl">
 
-          <div className="mb-3">
-            <label className="form-label">Email address</label>
-            <input type="email" className="form-control" name="email" required onChange={handleChange} />
-          </div>
+        <h1 className="text-4xl font-bold text-gray-900 text-center">
+          Create Account ✨
+        </h1>
+        <p className="text-center text-gray-500 mt-2">
+          Join Re-Wear community
+        </p>
 
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input type="password" className="form-control" name="password" required onChange={handleChange} />
-          </div>
+        <form onSubmit={handleRegister} className="mt-8 space-y-5">
 
-          <div className="mb-3">
-            <label className="form-label">Confirm Password</label>
-            <input type="password" className="form-control" name="confirmPassword" required onChange={handleChange} />
-          </div>
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#d46b4a] outline-none"
+          />
 
-          <button type="submit" className="btn btn-success w-100">Register</button>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#d46b4a] outline-none"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#d46b4a] outline-none"
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-[#d46b4a] text-white py-3 rounded-xl text-lg font-semibold hover:bg-[#bf5839] transition shadow-md"
+          >
+            Register
+          </button>
         </form>
 
-        <p className="text-center mt-3">
-          Already have an account? <Link to="/login">Login here</Link>
+        <p className="text-center mt-6 text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#d46b4a] font-semibold">
+            Login
+          </Link>
         </p>
+
       </div>
     </div>
   );
