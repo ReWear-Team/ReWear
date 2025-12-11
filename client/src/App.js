@@ -13,6 +13,10 @@ import Register from './pages/Register';
 import BrowseItems from './pages/BrowseItems';
 import Wishlist from './pages/Wishlist';
 import NotAuthorized from './pages/NotAuthorized';
+import HowItWorks from "./pages/HowItWorks";
+import CategoriesPage from "./pages/CategoriesPage";
+import EditProfile from "./pages/EditProfile";
+
 
 function App() {
   return (
@@ -22,6 +26,9 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/add-item" element={<AddItem />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/item/:id" element={<ItemDetail />} />
