@@ -23,7 +23,7 @@ const BrowseItems = () => {
   // FETCH ITEMS
   const fetchItems = async () => {
     try {
-      const res = await fetch("https://rewear-z7yj.onrender.com/api/items");
+      const res = await fetch("http://localhost:5000/api/items");
       const data = await res.json();
 
       if (!Array.isArray(data)) return;
@@ -66,7 +66,7 @@ const BrowseItems = () => {
     if (!token) return alert("Please login to buy items.");
 
     const res = await fetch(
-      `https://rewear-z7yj.onrender.com/api/items/buy/${id}`,
+      `http://localhost:5000/api/items/buy/${id}`,
       {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
