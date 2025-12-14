@@ -4,7 +4,7 @@ import ItemCard from "../components/ItemCard";
 
 const LandingPage = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
-  const [stats, setStats] = useState({
+  const [stats, ] = useState({
     activeItems: 0,
     totalItems: 0,
     totalUsers: 0,
@@ -22,18 +22,10 @@ const LandingPage = () => {
   const fetchFeaturedItems = async () => {
     try {
       const res = await fetch(
-        "https://rewear-z7yj.onrender.com/api/items/featured"
+        fetch("http://localhost:5000/api/items/featured")
       );
       const data = await res.json();
       setFeaturedItems(data);
-    } catch {}
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch("https://rewear-z7yj.onrender.com/api/stats");
-      const data = await res.json();
-      setStats(data);
     } catch {}
   };
 
@@ -43,7 +35,7 @@ const LandingPage = () => {
       if (!token) return alert("Please login to buy items.");
 
       const res = await fetch(
-        `https://rewear-z7yj.onrender.com/api/items/buy/${id}`,
+        `http://localhost:5000/api/items/buy/${id}`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },
@@ -58,8 +50,12 @@ const LandingPage = () => {
 
   useEffect(() => {
     fetchFeaturedItems();
+<<<<<<< HEAD
     fetchStats();
 >>>>>>> 9cdeb9a (Update frontend)
+=======
+    
+>>>>>>> f4da854 (Add Some Features)
   }, []);
 
   return (
@@ -72,7 +68,7 @@ const LandingPage = () => {
 
         {/* ================= HERO SECTION ================= */}
         <h1 className="mt-6 text-5xl md:text-6xl font-bold text-gray-800 leading-tight">
-          Give Fashion a{" "}
+          Give Your Fashion a{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-green-600">
             Second
           </span>{" "}
@@ -120,7 +116,18 @@ const LandingPage = () => {
               <ItemCard key={item._id} item={item} handleBuy={handleBuy} />
             ))
           ) : (
-            <p className="text-gray-600 mt-4">No featured items available.</p>
+           <div className="col-span-full text-center py-16">
+  <p className="text-lg text-gray-500">
+    🌱 New items coming soon — be the first to sell!
+  </p>
+  <Link
+    to="/add-item"
+    className="inline-block mt-4 px-6 py-3 bg-[#d46b4a] text-white rounded-lg"
+  >
+    Sell an Item
+  </Link>
+</div>
+
           )}
         </div>
       </div>

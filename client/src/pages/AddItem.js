@@ -1,20 +1,46 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const SIZE_BY_CATEGORY = {
+  Tops: ["XS", "S", "M", "L", "XL"],
+  Pants: ["28", "30", "32", "34", "36", "38", "40"],
+  Shoes: ["6", "7", "8", "9", "10", "11"],
+  Bags: ["One Size"],
+  Watches: ["One Size"],
+  Jewelry: ["One Size"],
+  Accessories: ["One Size"],
+};
 
 const AddItem = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     title: "",
+    brand: "",
+    price: "",
     description: "",
     category: "",
     size: "",
     condition: "",
-    availability: "Available",
   });
 
-  const [ , setImage] = useState(null);
+  const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "category") {
+      const autoSize =
+        ["Bags", "Watches", "Jewelry", "Accessories"].includes(value)
+          ? "One Size"
+          : "";
+
+      setForm({ ...form, category: value, size: autoSize });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleImage = (e) => {
@@ -23,8 +49,9 @@ const AddItem = () => {
     setPreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     const token = localStorage.getItem('token');
@@ -81,19 +108,46 @@ const AddItem = () => {
     alert("Item submitted!");
     // Will integrate backend API next
 >>>>>>> 9cdeb9a (Update frontend)
+=======
+
+    if (!image) return alert("Please upload an image.");
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Please login first.");
+
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) =>
+      formData.append(key, value)
+    );
+    formData.append("image", image);
+
+    try {
+      await axios.post("http://localhost:5000/api/items", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("Item added successfully!");
+      navigate("/explore");
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Error uploading item.");
+    }
+>>>>>>> f4da854 (Add Some Features)
   };
 
   return (
     <div className="pt-28 px-6 bg-gray-50 min-h-screen">
       <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow">
-
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Item</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Add New Item
+        </h1>
         <p className="text-gray-500 mb-8">
           Upload your fashion item to the Re-Wear marketplace
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* Title */}
           <div>
             <label className="font-medium text-gray-700">Title</label>
@@ -102,8 +156,33 @@ const AddItem = () => {
               name="title"
               value={form.title}
               onChange={handleChange}
-              placeholder="e.g., Men's Jacket"
-              className="w-full mt-2 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+              className="w-full mt-2 px-4 py-3 border rounded-lg"
+              required
+            />
+          </div>
+
+          {/* Brand */}
+          <div>
+            <label className="font-medium text-gray-700">Brand</label>
+            <input
+              type="text"
+              name="brand"
+              value={form.brand}
+              onChange={handleChange}
+              className="w-full mt-2 px-4 py-3 border rounded-lg"
+              required
+            />
+          </div>
+
+          {/* Price */}
+          <div>
+            <label className="font-medium text-gray-700">Price ($)</label>
+            <input
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              className="w-full mt-2 px-4 py-3 border rounded-lg"
               required
             />
           </div>
@@ -115,13 +194,12 @@ const AddItem = () => {
               name="description"
               value={form.description}
               onChange={handleChange}
-              placeholder="Describe your item..."
-              className="w-full mt-2 px-4 py-3 border rounded-lg h-28 focus:ring-2 focus:ring-black outline-none"
+              className="w-full mt-2 px-4 py-3 border rounded-lg h-28"
               required
             />
           </div>
 
-          {/* CATEGORY & SIZE */}
+          {/* Category & Size */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="font-medium text-gray-700">Category</label>
@@ -129,16 +207,17 @@ const AddItem = () => {
                 name="category"
                 value={form.category}
                 onChange={handleChange}
-                className="w-full mt-2 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+                className="w-full mt-2 px-4 py-3 border rounded-lg"
                 required
               >
                 <option value="">Select category</option>
-                <option>Clothing</option>
-                <option>Shoes</option>
-                <option>Bags</option>
-                <option>Watches</option>
-                <option>Jewelry</option>
-                <option>Accessories</option>
+                <option value="Tops">Tops</option>
+                <option value="Pants">Pants</option>
+                <option value="Shoes">Shoes</option>
+                <option value="Bags">Bags</option>
+                <option value="Watches">Watches</option>
+                <option value="Jewelry">Jewelry</option>
+                <option value="Accessories">Accessories</option>
               </select>
             </div>
 
@@ -148,15 +227,22 @@ const AddItem = () => {
                 name="size"
                 value={form.size}
                 onChange={handleChange}
-                className="w-full mt-2 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+                className="w-full mt-2 px-4 py-3 border rounded-lg"
                 required
+                disabled={!form.category}
               >
-                <option value="">Select size</option>
-                <option>XS</option>
-                <option>S</option>
-                <option>M</option>
-                <option>L</option>
-                <option>XL</option>
+                <option value="">
+                  {form.category
+                    ? "Select size"
+                    : "Select category first"}
+                </option>
+
+                {form.category &&
+                  SIZE_BY_CATEGORY[form.category]?.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -168,7 +254,7 @@ const AddItem = () => {
               name="condition"
               value={form.condition}
               onChange={handleChange}
-              className="w-full mt-2 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+              className="w-full mt-2 px-4 py-3 border rounded-lg"
               required
             >
               <option value="">Select condition</option>
@@ -179,14 +265,14 @@ const AddItem = () => {
             </select>
           </div>
 
-          {/* Image Upload */}
+          {/* Image */}
           <div>
             <label className="font-medium text-gray-700">Upload Image</label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImage}
-              className="w-full mt-2"
+              className="mt-2"
             />
 
             {preview && (
@@ -201,11 +287,10 @@ const AddItem = () => {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#d46b4a] hover:bg-[#bf5839] text-white py-3 rounded-lg font-semibold text-lg shadow transition"
+            className="w-full bg-[#d46b4a] hover:bg-[#bf5839] text-white py-3 rounded-lg text-lg"
           >
             Submit Item
           </button>
-
         </form>
       </div>
     </div>

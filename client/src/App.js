@@ -16,6 +16,13 @@ import NotAuthorized from './pages/NotAuthorized';
 import HowItWorks from "./pages/HowItWorks";
 import CategoriesPage from "./pages/CategoriesPage";
 import EditProfile from "./pages/EditProfile";
+import SingleItem from "./pages/SingleItem";
+import AboutUs from "./pages/AboutUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Contact from "./pages/Contact";
+import Orders from "./pages/Orders";
+
+
 
 
 function App() {
@@ -27,6 +34,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/item/:id" element={<SingleItem />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/add-item" element={<AddItem />} />
@@ -34,9 +42,14 @@ function App() {
           <Route path="/item/:id" element={<ItemDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/browse" element={<BrowseItems />} />
+          <Route path="/explore" element={<BrowseItems />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/not-authorized" element={<NotAuthorized />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/orders" element={<Orders />} />
+
         </Routes>
       </div>
       <Footer />

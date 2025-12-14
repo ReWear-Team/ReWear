@@ -1,37 +1,58 @@
-import React from "react";
-
 const PrivacyPolicy = () => {
   return (
-    <div className="max-w-5xl mx-auto pt-28 px-6">
-      <h1 className="text-4xl font-bold text-gray-900">Privacy Policy</h1>
+    <div className="min-h-screen pt-28 px-6 bg-[#f7f3f0]">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-10 space-y-8">
 
-      <p className="text-gray-600 mt-4 leading-relaxed">
-        Your privacy is important to us. This policy explains how Re-Wear collects,
-        uses, and protects your personal information.
-      </p>
+        <h1 className="text-4xl font-bold text-[#2a1e18]">
+          Privacy Policy
+        </h1>
 
-      <h2 className="text-2xl font-semibold mt-8">Information We Collect</h2>
-      <p className="text-gray-600 mt-2 leading-relaxed">
-        We collect your name, email, and account details to provide a smooth user experience.
-      </p>
+        <p className="text-gray-600">
+          Your privacy is important to us. This policy explains how Re-Wear
+          collects, uses, and protects your information.
+        </p>
 
-      <h2 className="text-2xl font-semibold mt-8">How We Use Your Information</h2>
-      <ul className="list-disc ml-6 text-gray-600 mt-3 space-y-2">
-        <li>To create and manage accounts.</li>
-        <li>To communicate with you.</li>
-        <li>To improve our services.</li>
-      </ul>
+        <Section
+          title="Information We Collect"
+          text="We collect your name, email, and account details to provide a smooth experience."
+        />
 
-      <h2 className="text-2xl font-semibold mt-8">Data Protection</h2>
-      <p className="text-gray-600 mt-2">
-        We use modern security tools and encrypted storage to safeguard your data.
-      </p>
+        <Section
+          title="How We Use Your Information"
+          list={[
+            "Create and manage accounts",
+            "Communicate with users",
+            "Improve our services",
+          ]}
+        />
 
-      <p className="text-gray-500 mt-10">
-        If you have any questions, contact us at support@rewear.com
-      </p>
+        <Section
+          title="Data Protection"
+          text="We use modern security practices and encrypted storage to safeguard your data."
+        />
+
+        <div className="bg-[#f7f3f0] rounded-xl p-6 text-gray-700">
+          Questions? Contact us at{" "}
+          <span className="font-medium text-[#d46b4a]">
+            support@rewear.com
+          </span>
+        </div>
+
+      </div>
     </div>
   );
 };
+
+const Section = ({ title, text, list }) => (
+  <div>
+    <h2 className="text-2xl font-semibold text-[#2a1e18] mb-2">{title}</h2>
+    {text && <p className="text-gray-600">{text}</p>}
+    {list && (
+      <ul className="list-disc ml-6 text-gray-600 space-y-1">
+        {list.map(i => <li key={i}>{i}</li>)}
+      </ul>
+    )}
+  </div>
+);
 
 export default PrivacyPolicy;
