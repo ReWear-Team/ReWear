@@ -1,33 +1,14 @@
-<<<<<<< HEAD
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-=======
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
->>>>>>> 9cdeb9a (Update frontend)
 
 const ItemDetail = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetch(`http://localhost:5000/api/items/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setItem(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching item:', err);
-        setLoading(false);
-      });
-  }, [id]);
-=======
   const fetchItem = useCallback(async () => {
     try {
-      const res = await fetch(`https://rewear-z7yj.onrender.com/api/items/${id}`);
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/items/${id}`);
       const data = await res.json();
       setItem(data);
       setLoading(false);
@@ -39,51 +20,16 @@ const ItemDetail = () => {
   useEffect(() => {
     fetchItem();
   }, [fetchItem]);
->>>>>>> 9cdeb9a (Update frontend)
 
   if (loading) return <div className="text-center py-20 text-gray-500">Loading...</div>;
   if (!item) return <div className="text-center py-20 text-gray-600">Item not found</div>;
 
-<<<<<<< HEAD
-  const handleSwapRequest = () => {
-    alert('Swap request sent!');
-  };
-
-  const handleRedeem = () => {
-    alert(`You redeemed this item for ${item.points} points.`);
-  };
-
-  return (
-    <div className="container py-5">
-      <div className="row">
-        <div className="col-md-6 text-center">
-          <img src={`http://localhost:5000${item.imageUrl}`} alt={item.title} className="img-fluid rounded shadow" />
-        </div>
-
-        <div className="col-md-6">
-          <h3>{item.title}</h3>
-          <p className="text-muted">{item.category} • Size {item.size}</p>
-          <p><strong>Condition:</strong> {item.condition}</p>
-          <p><strong>Description:</strong><br />{item.description}</p>
-          <p><strong>Status:</strong> {item.status}</p>
-          <p><strong>Listed By:</strong><br />{item.owner?.name || 'Anonymous'}<br /><small>{item.owner?.email}</small></p>
-
-          {item.mode === 'swap' ? (
-            <button className="btn btn-primary mt-3" onClick={handleSwapRequest}>
-              🔁 Propose Swap
-            </button>
-          ) : (
-            <button className="btn btn-success mt-3" onClick={handleRedeem}>
-              💎 Redeem for {item.points} Points
-            </button>
-          )}
-=======
   const handleBuy = async () => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Please login to buy this item.");
 
     try {
-      const res = await fetch(`https://rewear-z7yj.onrender.com/api/items/buy/${item._id}`, {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/items/buy/${item._id}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -103,7 +49,7 @@ const ItemDetail = () => {
 
         <div className="bg-white rounded-2xl shadow-lg p-6 flex justify-center">
           <img
-            src={`https://rewear-z7yj.onrender.com${item.imageUrl}`}
+            src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
             alt={item.title || ""}
             className="rounded-xl object-contain max-h-[500px] w-full transition-transform duration-500 hover:scale-105"
           />
@@ -174,7 +120,6 @@ const ItemDetail = () => {
             )}
           </div>
 
->>>>>>> 9cdeb9a (Update frontend)
         </div>
       </div>
     </div>

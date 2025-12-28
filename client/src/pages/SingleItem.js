@@ -135,7 +135,7 @@ const SingleItem = () => {
   {/* FIXED IMAGE CONTAINER */}
   <div className="w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
     <img
-      src={`http://localhost:5000${item.imageUrl}`}
+      src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
       alt={item.title}
       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
     />

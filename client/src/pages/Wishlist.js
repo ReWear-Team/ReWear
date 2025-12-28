@@ -22,7 +22,7 @@ const Wishlist = () => {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/wishlist", {
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/wishlist`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -83,9 +83,9 @@ const Wishlist = () => {
         ) : (
           /* ---------------- ITEMS GRID ---------------- */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {wishlist.map((item) => (
-              <ItemCard key={item._id} item={item} />
-            ))}
+            {wishlist.map((entry) => (
+  <ItemCard key={entry.item._id} item={entry.item} />
+))}
           </div>
         )}
 

@@ -24,42 +24,6 @@ const itemSchema = new mongoose.Schema(
     originalPrice: {
     type: Number,
     required: true,
-<<<<<<< HEAD
-  },
-  condition: {
-    type: String,
-    enum: ['New', 'Good', 'Worn'],
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  mode: {
-    type: String,
-    enum: ['swap', 'points'],
-    default: 'swap',
-  },
-  imageUrl: {
-    type: String,
-    required: true,
-  },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['Available', 'Swapped'],
-    default: 'Available',
-  },
-  featured: {
-    type: Boolean,
-    default: true  
-  },
-}, { timestamps: true });
-=======
     },
 
     // ✅ Flexible size (XS, 32, 9, One Size)
@@ -81,7 +45,6 @@ const itemSchema = new mongoose.Schema(
       ],
       required: true,
     },
->>>>>>> f4da854 (Add Some Features)
 
     condition: {
       type: String,

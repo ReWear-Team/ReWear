@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import ItemCard from "../components/ItemCard";
 
@@ -7,10 +8,14 @@ const BrowseItems = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [size, setSize] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("search") || "";
+
 
   // CATEGORY LIST
   const defaultCategories = [
-    { name: "Clothing", icon: "👕" },
+    { name: "Tops", icon: "👕" },
     { name: "Shoes", icon: "👟" },
     { name: "Bags", icon: "👜" },
     { name: "Watches", icon: "⌚" },
@@ -20,10 +25,13 @@ const BrowseItems = () => {
 
   const getCount = (cat) => items.filter((i) => i.category === cat).length;
 
-  // FETCH ITEMS
-  const fetchItems = async () => {
+  // 🔍 FETCH ITEMS (WITH SEARCH)
+  const fetchItems = async (query = "") => {
     try {
-      const res = await fetch("http://localhost:5000/api/items");
+      setLoading(true);
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/items?search=${query}`
+      );
       const data = await res.json();
 
       if (!Array.isArray(data)) return;
@@ -32,6 +40,8 @@ const BrowseItems = () => {
       setFiltered(data);
     } catch (err) {
       console.error("Failed to fetch items:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,15 +49,19 @@ const BrowseItems = () => {
     fetchItems();
   }, []);
 
-  // FILTERING
+  useEffect(() => {
+  if (query) {
+    fetchItems(query);
+    setSearch(query);
+    setCategory("");
+    setSize("");
+  }
+}, [query]);
+
+
+  // 🧠 LOCAL FILTERING (category + size)
   useEffect(() => {
     let result = [...items];
-
-    if (search.trim()) {
-      result = result.filter((item) =>
-        item.title.toLowerCase().includes(search.toLowerCase())
-      );
-    }
 
     if (category) {
       result = result.filter((item) => item.category === category);
@@ -58,7 +72,7 @@ const BrowseItems = () => {
     }
 
     setFiltered(result);
-  }, [search, category, size, items]);
+  }, [category, size, items]);
 
   // BUY ITEM
   const handleBuy = async (id) => {
@@ -66,7 +80,7 @@ const BrowseItems = () => {
     if (!token) return alert("Please login to buy items.");
 
     const res = await fetch(
-      `http://localhost:5000/api/items/buy/${id}`,
+      `${process.env.REACT_APP_BASE_URL}/api/items/buy/${id}`,
       {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
@@ -75,7 +89,7 @@ const BrowseItems = () => {
 
     const data = await res.json();
     alert(data.msg);
-    fetchItems();
+    fetchItems(search);
   };
 
   const uniqueSizes = [...new Set(items.map((i) => i.size))];
@@ -118,9 +132,12 @@ const BrowseItems = () => {
         <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
           <input
             type="text"
-            placeholder="Search items..."
+            placeholder="Search items, brands..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              fetchItems(e.target.value); // 🔥 backend search
+            }}
             className="px-4 py-3 border rounded-lg w-full focus:ring-2 focus:ring-black outline-none"
           />
 
@@ -140,7 +157,7 @@ const BrowseItems = () => {
               setCategory("");
               setSize("");
               setSearch("");
-              setFiltered(items);
+              fetchItems();
             }}
             className="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg w-full"
           >
@@ -154,10 +171,19 @@ const BrowseItems = () => {
         </h2>
         <p className="text-gray-500 mb-6">Fresh finds from our community</p>
 
-        {/* ITEMS GRID */}
-        {filtered.length === 0 ? (
+        {/* ITEMS GRID / STATES */}
+        {loading ? (
           <div className="text-center py-20 text-gray-500 text-lg">
-            No items available in this category yet.
+            Searching items...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <h2 className="text-xl font-semibold text-gray-700">
+              No items found 😕
+            </h2>
+            <p className="text-gray-500 mt-2">
+              Try a different search or reset filters
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mt-10">

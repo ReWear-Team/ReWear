@@ -10,20 +10,11 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-<<<<<<< HEAD
-    try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-      });
-=======
-    const res = await fetch("https://rewear-z7yj.onrender.com/api/auth/register", {
+    const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
->>>>>>> 9cdeb9a (Update frontend)
 
     const data = await res.json();
 

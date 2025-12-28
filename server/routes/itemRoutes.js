@@ -9,12 +9,9 @@ const {
   getItemById,
   deleteItem,
   getMyItems,
-<<<<<<< HEAD
-  getFeaturedItems
-=======
   getFeaturedItems,
-  buyItem
->>>>>>> f4da854 (Add Some Features)
+  buyItem,
+  getStats,
 } = require('../controllers/itemController');
 
 // Create uploads folder if missing
@@ -22,11 +19,7 @@ const fs = require('fs');
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
-<<<<<<< HEAD
-// 🔧 Setup multer
-=======
 // Multer config
->>>>>>> f4da854 (Add Some Features)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
@@ -34,23 +27,25 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-<<<<<<< HEAD
-// ✅ Add item with file upload middleware
-router.post('/', protect, upload.single('image'), addItem);
-router.get('/featured', getFeaturedItems);
-router.get('/my-items', protect, getMyItems);
-router.get('/', getItems);
-router.get('/:id', getItemById);
-router.delete('/:id', protect, deleteItem);
-=======
 // --- ROUTES ---
+
+// CREATE
 router.post("/", protect, upload.single("image"), addItem);
+
+// STATIC GET ROUTES (MOST SPECIFIC FIRST)
 router.get("/featured", getFeaturedItems);
+router.get("/stats", getStats);
 router.get("/my-items", protect, getMyItems);
+
+// GENERAL GET ALL (AFTER static)
 router.get("/", getItems);
+
+// DYNAMIC (ALWAYS LAST)
 router.get("/:id", getItemById);
+
+// ACTIONS
 router.delete("/:id", protect, deleteItem);
 router.patch("/buy/:id", protect, buyItem);
->>>>>>> f4da854 (Add Some Features)
+
 
 module.exports = router;

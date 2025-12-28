@@ -56,10 +56,17 @@ const Navbar = () => {
 
           {/* DESKTOP SEARCH */}
           <input
-            type="text"
-            placeholder="Search items, brands..."
-            className="hidden md:block w-72 bg-gray-100 px-4 py-2 rounded-xl outline-none"
-          />
+  type="text"
+  placeholder="Search items, brands..."
+  className="hidden md:block w-72 bg-gray-100 px-4 py-2 rounded-xl outline-none"
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && e.target.value.trim()) {
+      navigate(`/explore?search=${e.target.value.trim()}`);
+      e.target.value = "";
+    }
+  }}
+/>
+
 
           {/* DESKTOP ICONS */}
           <div className="hidden md:flex items-center space-x-6 text-gray-700">

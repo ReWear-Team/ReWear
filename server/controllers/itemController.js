@@ -1,15 +1,36 @@
-<<<<<<< HEAD
-// server/controllers/itemController.js
-const Item = require('../models/Item');
-
-// @desc    Add new item
-=======
 const Item = require("../models/Item");
+const User = require("../models/User");
+
+const getStats = async (req, res) => {
+  try {
+    const totalItems = await Item.countDocuments();
+    const activeItems = await Item.countDocuments({ status: "Available" });
+    const soldItems = await Item.countDocuments({ status: "Sold" });
+
+    const totalUsers = await User.countDocuments();
+
+    const happySellers = await Item.distinct("owner", {
+      status: "Sold",
+    });
+
+    const satisfaction =
+      totalItems === 0 ? 0 : Math.round((soldItems / totalItems) * 100);
+
+    res.json({
+      activeItems,
+      happySellers: happySellers.length,
+      totalUsers,
+      satisfaction,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching stats:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
 
 // ===============================
 // ADD NEW ITEM
 // ===============================
->>>>>>> f4da854 (Add Some Features)
 const addItem = async (req, res) => {
   try {
     const {
@@ -40,15 +61,6 @@ const addItem = async (req, res) => {
       category,
       condition,
       description,
-<<<<<<< HEAD
-      mode,
-      imageUrl: `/uploads/${image.filename}`,
-      owner: req.user,
-      status: 'Pending',
-    });
-
-    await newItem.save();
-=======
       imageUrl: `/uploads/${req.file.filename}`,
       owner: req.user, // ✅ actual seller
       status: "Available",
@@ -56,7 +68,6 @@ const addItem = async (req, res) => {
 
     await newItem.save();
 
->>>>>>> f4da854 (Add Some Features)
     res.status(201).json(newItem);
   } catch (err) {
     console.error("❌ Error adding item:", err);
@@ -64,22 +75,27 @@ const addItem = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-// @desc    Get all available items
-const getItems = async (req, res) => {
-  try {
-    const items = await Item.find({ status: 'Available' }).populate('owner', 'name');
-=======
 // ===============================
 // GET ALL ITEMS
 // ===============================
+// GET ALL ITEMS (with search)
 const getItems = async (req, res) => {
   try {
-    const items = await Item.find({ status: "Available" })
-      .populate("owner", "name email") // ✅ seller info
+    const { search } = req.query;
+
+    let query = { status: "Available" };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const items = await Item.find(query)
       .sort({ createdAt: -1 });
 
->>>>>>> f4da854 (Add Some Features)
     res.json(items);
   } catch (err) {
     console.error("❌ Error fetching items:", err);
@@ -87,25 +103,17 @@ const getItems = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-const getFeaturedItems = async (req, res) => {
-  try {
-    const items = await Item.find({ status: 'Available' }).sort({ createdAt: -1 }).limit(6);
-=======
+
 // ===============================
 // GET FEATURED ITEMS
 // ===============================
 const getFeaturedItems = async (req, res) => {
   try {
-    const items = await Item.find({
-      status: "Available",
-      featured: true,
-    })
+    const items = await Item.find({ status: "Available" })
       .populate("owner", "name")
-      .sort({ createdAt: -1 })
-      .limit(6);
+      .sort({ createdAt: -1 })   // newest first
+      .limit(9);                 // homepage-friendly
 
->>>>>>> f4da854 (Add Some Features)
     res.json(items);
   } catch (err) {
     console.error("❌ Error fetching featured items:", err);
@@ -113,48 +121,7 @@ const getFeaturedItems = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-const getMyItems = async (req, res) => {
-  try {
-    const items = await Item.find({ owner: req.user }).populate('owner', 'name');
-    res.json(items);
-  } catch (err) {
-    console.error('Error fetching my items:', err);
-    res.status(500).json({ msg: 'Server error' });
-  }
-};
-// @desc    Get item by ID
-const getItemById = async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id).populate('owner', 'name email');
-    if (!item) return res.status(404).json({ msg: 'Item not found' });
-    res.json(item);
-  } catch (err) {
-    console.error('❌ Error in getItemById:', err);
-    res.status(500).json({ msg: 'Server error while fetching item' });
-  }
-};
 
-// @desc    Delete item (only by owner)
-const deleteItem = async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id);
-    if (!item) return res.status(404).json({ msg: 'Item not found' });
-
-    if (item.owner.toString() !== req.user) {
-      return res.status(403).json({ msg: 'Not authorized to delete this item' });
-    }
-
-    await item.remove();
-    res.json({ msg: 'Item deleted successfully' });
-  } catch (err) {
-    console.error('❌ Error in deleteItem:', err);
-    res.status(500).json({ msg: 'Server error while deleting item' });
-  }
-};
-
-// ✅ Export all controllers
-=======
 // ===============================
 // GET ITEM BY ID
 // ===============================
@@ -239,16 +206,13 @@ const buyItem = async (req, res) => {
   }
 };
 
->>>>>>> f4da854 (Add Some Features)
 module.exports = {
   addItem,
   getItems,
   getFeaturedItems,
-<<<<<<< HEAD
-=======
   getItemById,
   getMyItems,
   deleteItem,
   buyItem,
->>>>>>> f4da854 (Add Some Features)
+  getStats,
 };

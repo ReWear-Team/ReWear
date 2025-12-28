@@ -4,29 +4,39 @@ import ItemCard from "../components/ItemCard";
 
 const LandingPage = () => {
   const [featuredItems, setFeaturedItems] = useState([]);
-  const [stats, ] = useState({
-    activeItems: 0,
-    totalItems: 0,
-    totalUsers: 0,
-    happySellers: 0,
-    satisfaction: 0,
-  });
+  const [stats, setStats] = useState({
+  activeItems: 0,
+  happySellers: 0,
+  totalUsers: 0,
+  satisfaction: 0,
+});
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetch('http://localhost:5000/api/items/featured')
-      .then(res => res.json())
-      .then(data => setFeaturedItems(data))
-      .catch(err => console.error('Failed to load featured items:', err));
-=======
+const fetchStats = async () => {
+  try {
+    const res = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/api/items/stats`
+    );
+    const data = await res.json();
+    setStats(data);
+  } catch (err) {
+    console.error("Failed to load stats:", err);
+  }
+};
+
+useEffect(() => {
+  fetchFeaturedItems();
+  fetchStats();
+}, []);
+
+
   const fetchFeaturedItems = async () => {
     try {
-      const res = await fetch(
-        fetch("http://localhost:5000/api/items/featured")
-      );
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/items/featured`);
       const data = await res.json();
       setFeaturedItems(data);
-    } catch {}
+    } catch (err) {
+      console.error("Failed to load featured items:", err);
+    }
   };
 
   const handleBuy = async (id) => {
@@ -35,7 +45,7 @@ const LandingPage = () => {
       if (!token) return alert("Please login to buy items.");
 
       const res = await fetch(
-        `http://localhost:5000/api/items/buy/${id}`,
+        `${process.env.REACT_APP_BASE_URL}/api/items/buy/${id}`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },
@@ -45,28 +55,22 @@ const LandingPage = () => {
       const data = await res.json();
       alert(data.msg);
       fetchFeaturedItems();
-    } catch {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
     fetchFeaturedItems();
-<<<<<<< HEAD
-    fetchStats();
->>>>>>> 9cdeb9a (Update frontend)
-=======
-    
->>>>>>> f4da854 (Add Some Features)
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-rose-50 pt-24 px-6">
       <div className="max-w-6xl mx-auto">
-        {/* ================= BADGE ================= */}
         <span className="inline-flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium text-sm">
           🌿 Sustainable Fashion Marketplace
         </span>
 
-        {/* ================= HERO SECTION ================= */}
         <h1 className="mt-6 text-5xl md:text-6xl font-bold text-gray-800 leading-tight">
           Give Your Fashion a{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-green-600">
@@ -83,7 +87,7 @@ const LandingPage = () => {
 
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
-            to="/browse"
+            to="/explore"
             className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-lg font-medium shadow transition"
           >
             Start Shopping →
@@ -97,15 +101,14 @@ const LandingPage = () => {
           </Link>
         </div>
 
-        {/* ================= STATS ================= */}
         <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-700">
-          <Stat number={`${stats.activeItems}+`} label="Active Items" />
-          <Stat number={`${stats.happySellers}+`} label="Happy Sellers" />
-          <Stat number={`${stats.totalUsers}+`} label="Total Users" />
-          <Stat number={`${stats.satisfaction}%`} label="Satisfaction" />
-        </div>
+  <Stat number={`${stats.activeItems}+`} label="Active Items" />
+  <Stat number={`${stats.happySellers}+`} label="Happy Sellers" />
+  <Stat number={`${stats.totalUsers}+`} label="Total Users" />
+  <Stat number={`${stats.satisfaction}%`} label="Satisfaction" />
+</div>
 
-        {/* ================= FEATURED ITEMS ================= */}
+
         <h2 className="mt-16 text-3xl font-bold text-gray-800">
           Featured Items
         </h2>
@@ -116,54 +119,20 @@ const LandingPage = () => {
               <ItemCard key={item._id} item={item} handleBuy={handleBuy} />
             ))
           ) : (
-           <div className="col-span-full text-center py-16">
-  <p className="text-lg text-gray-500">
-    🌱 New items coming soon — be the first to sell!
-  </p>
-  <Link
-    to="/add-item"
-    className="inline-block mt-4 px-6 py-3 bg-[#d46b4a] text-white rounded-lg"
-  >
-    Sell an Item
-  </Link>
-</div>
-
+            <div className="col-span-full text-center py-16">
+              <p className="text-lg text-gray-500">
+                🌱 New items coming soon — be the first to sell!
+              </p>
+              <Link
+                to="/add-item"
+                className="inline-block mt-4 px-6 py-3 bg-[#d46b4a] text-white rounded-lg"
+              >
+                Sell an Item
+              </Link>
+            </div>
           )}
         </div>
       </div>
-<<<<<<< HEAD
-
-      <h3 className="mb-4">Featured Items</h3>
-
-      <div className="row g-4">
-        {featuredItems.length > 0 ? (
-          featuredItems.map(item => (
-            <div className="col-md-4" key={item._id}>
-              <div className="card h-100 shadow-sm">
-                <img
-                  src={`http://localhost:5000${item.imageUrl}`}
-                  className="card-img-top"
-                  alt={item.title}
-                  style={{ height: '250px', objectFit: 'contain' }}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{item.title}</h5>
-                  <p className="card-text text-muted">
-                    Size {item.size} • {item.points} Points
-                  </p>
-                  <Link to={`/item/${item._id}`} className="btn btn-sm btn-outline-primary">
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="alert alert-info">No featured items available.</div>
-        )}
-      </div>
-=======
->>>>>>> 9cdeb9a (Update frontend)
     </div>
   );
 };
