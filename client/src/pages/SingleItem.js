@@ -11,7 +11,7 @@ const SingleItem = () => {
 
   useEffect(() => {
     const fetchItem = async () => {
-      const res = await fetch(`http://localhost:5000/api/items/${id}`);
+      const res = await fetch( `${process.env.REACT_APP_BASE_URL}/api/items/${id}`);
       const data = await res.json();
       setItem(data);
       setDiscount(Math.floor(Math.random() * 40 + 10));
@@ -40,7 +40,7 @@ const SingleItem = () => {
     if (!requireLogin()) return;
 
     const res = await fetch(
-      `http://localhost:5000/api/items/buy/${item._id}`,
+       `${process.env.REACT_APP_BASE_URL}/api/items/buy/${item._id}`,
       { method: "PATCH", headers: authHeader }
     );
 
@@ -53,7 +53,7 @@ const SingleItem = () => {
     if (!requireLogin()) return;
 
     const res = await fetch(
-      `http://localhost:5000/api/cart/add/${item._id}`,
+      `${process.env.REACT_APP_BASE_URL}/api/cart/add/${item._id}`,
       { method: "POST", headers: authHeader }
     );
 
@@ -66,8 +66,8 @@ const SingleItem = () => {
     if (!requireLogin()) return;
 
     const endpoint = wishlisted
-      ? `http://localhost:5000/api/wishlist/remove/${item._id}`
-      : `http://localhost:5000/api/wishlist/add/${item._id}`;
+      ?  `${process.env.REACT_APP_BASE_URL}/api/wishlist/remove/${item._id}`
+      :  `${process.env.REACT_APP_BASE_URL}/api/wishlist/add/${item._id}`;
 
     const method = wishlisted ? "DELETE" : "POST";
 
@@ -95,7 +95,7 @@ const SingleItem = () => {
     return;
   }
 
-  const res = await fetch("http://localhost:5000/api/chat/send", {
+  const res = await fetch( `${process.env.REACT_APP_BASE_URL}/api/chat/send`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
