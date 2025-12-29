@@ -1,28 +1,53 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    // ✅ Basic validation
+    if (!email || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
 
-    const data = await res.json();
+    try {
+      setLoading(true);
 
-    if (res.ok) {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
-    } else {
-      alert(data.msg || "Login failed");
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        toast.success("Logged in successfully 🎉");
+        navigate("/");
+      } else {
+        toast.error(data.msg || "Login failed");
+      }
+    } catch (error) {
+      toast.error("Server error. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,9 +82,15 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#d46b4a] text-white py-3 rounded-xl text-lg font-semibold hover:bg-[#bf5839] transition shadow-md"
+            disabled={loading}
+            className={`w-full py-3 rounded-xl text-lg font-semibold transition shadow-md
+              ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#d46b4a] hover:bg-[#bf5839] text-white"
+              }`}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

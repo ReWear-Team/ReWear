@@ -133,7 +133,7 @@ const SingleItem = () => {
   </span>
 
   {/* FIXED IMAGE CONTAINER */}
-  <div className="w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
+  <div className="w-full aspect-[8/9] overflow-hidden rounded-xl bg-gray-100">
     <img
       src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
       alt={item.title}

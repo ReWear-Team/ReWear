@@ -1,28 +1,57 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+    // ✅ Validation
+    if (!name || !email || !password) {
+      toast.error("All fields are required");
+      return;
+    }
 
-    const data = await res.json();
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
 
-    if (res.ok) {
-      alert("Account created successfully!");
-      navigate("/login");
-    } else {
-      alert(data.msg || "Registration failed");
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+            password,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Account created successfully!");
+        navigate("/login");
+      } else {
+        toast.error(data.msg || "Registration failed");
+      }
+    } catch (error) {
+      toast.error("Server error. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +86,7 @@ const Register = () => {
 
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 6 chars)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#d46b4a] outline-none"
@@ -65,9 +94,15 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#d46b4a] text-white py-3 rounded-xl text-lg font-semibold hover:bg-[#bf5839] transition shadow-md"
+            disabled={loading}
+            className={`w-full py-3 rounded-xl text-lg font-semibold transition shadow-md
+              ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#d46b4a] hover:bg-[#bf5839] text-white"
+              }`}
           >
-            Register
+            {loading ? "Creating account..." : "Register"}
           </button>
         </form>
 

@@ -13,18 +13,18 @@ const ItemCard = ({ item }) => {
         {/* Wishlist Icon */}
         <button
           className="absolute top-4 right-4 bg-white p-2 rounded-full shadow hover:scale-110 transition z-10"
-          onClick={(e) => e.preventDefault()} // prevent opening detail page when clicking heart
+          onClick={(e) => e.preventDefault()}
         >
           <FiHeart className="text-gray-700 text-xl" />
         </button>
 
         {/* Image */}
         <div className="relative">
-          <div className="overflow-hidden rounded-xl">
+          <div className="overflow-hidden rounded-xl aspect-[3/4] bg-gray-100">
             <img
-              src={`http://localhost:5000${item.imageUrl}`}
+              src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
               alt={item.title}
-              className="w-full h-72 object-cover transform transition duration-500 hover:scale-110"
+              className="w-full h-full object-cover transition duration-500 hover:scale-110"
             />
           </div>
 
@@ -40,21 +40,29 @@ const ItemCard = ({ item }) => {
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-900 mt-4">
+        <h3 className="text-lg font-semibold text-gray-900 mt-4 line-clamp-1">
           {item.title}
         </h3>
 
         {/* Category / Brand */}
-        <p className="text-gray-500 text-sm">{item.brand || item.category}</p>
+        <p className="text-gray-500 text-sm">
+          {item.brand || item.category}
+        </p>
 
         {/* Price */}
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xl font-bold text-gray-900">${item.price}</span>
-          <span className="line-through text-gray-400 text-sm">${oldPrice}</span>
+          <span className="text-xl font-bold text-gray-900">
+            ${item.price}
+          </span>
+          <span className="line-through text-gray-400 text-sm">
+            ${oldPrice}
+          </span>
         </div>
 
         {/* Size */}
-        <p className="text-gray-500 text-sm">Size: {item.size}</p>
+        <p className="text-gray-500 text-sm">
+          Size: {item.size || "N/A"}
+        </p>
       </div>
     </Link>
   );
