@@ -103,4 +103,20 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
+router.delete("/:id", protect, async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ msg: "Order not found" });
+  }
+
+  if (order.user.toString() !== req.user) {
+    return res.status(403).json({ msg: "Not authorized" });
+  }
+
+  await order.deleteOne();
+  res.json({ msg: "Order cancelled" });
+});
+
+
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Orders = () => {
@@ -21,11 +21,14 @@ const Orders = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/api/orders/my`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/orders/my`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
 
@@ -42,6 +45,41 @@ const Orders = () => {
     }
   };
 
+  // ===============================
+  // CANCEL / DELETE ORDER
+  // ===============================
+  const handleCancelOrder = async (orderId) => {
+  if (!window.confirm("Cancel this order?")) return;
+
+  try {
+    const res = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/api/orders/${orderId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("DELETE status:", res.status); // 👈 ADD THIS
+
+    const data = await res.json();
+    console.log("DELETE response:", data); // 👈 ADD THIS
+
+    if (!res.ok) {
+      toast.error(data.msg || "Failed to cancel order");
+      return;
+    }
+
+    toast.success("Order cancelled");
+    setOrders((prev) => prev.filter((o) => o._id !== orderId));
+  } catch (err) {
+    console.error(err);
+    toast.error("Server error");
+  }
+};
+
   /* ---------------- LOADING ---------------- */
   if (loading) {
     return (
@@ -54,56 +92,82 @@ const Orders = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] pt-28 px-6">
       <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Your Orders</h1>
 
-        <h1 className="text-3xl font-bold mb-10">Your Orders</h1>
-
-        {/* ---------------- EMPTY STATE ---------------- */}
         {orders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center mt-20 space-y-6">
-            <div className="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center text-4xl">
-              📦
-            </div>
-
-            <h2 className="text-xl font-semibold text-gray-800">
-              No orders yet
-            </h2>
-
-            <p className="text-gray-500 max-w-md">
-              Once you purchase items, they’ll appear here for tracking and history.
-            </p>
-
-            <Link
-              to="/explore"
-              className="mt-4 px-6 py-3 bg-[#d46b4a] text-white rounded-lg hover:bg-[#bf5839]"
-            >
-              Start Shopping
-            </Link>
-          </div>
+          <p className="text-gray-500">No orders found</p>
         ) : (
-          /* ---------------- ORDERS LIST (future-ready) ---------------- */
           <div className="space-y-6">
-            {orders.map((order) => (
-              <div
-                key={order._id}
-                className="bg-white p-6 rounded-xl shadow flex justify-between items-center"
-              >
-                <div>
-                  <p className="font-semibold">
-                    Order #{order._id.slice(-6)}
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    {order.items.length} items • ${order.total}
-                  </p>
-                </div>
+            {orders.map((order) => {
+              const item = order.items[0]?.item;
 
-                <span className="text-sm px-3 py-1 rounded-full bg-green-100 text-green-700">
-                  {order.status}
-                </span>
-              </div>
-            ))}
+              return (
+                <div
+                  key={order._id}
+                  className="bg-white rounded-xl shadow border p-5"
+                >
+                  {/* HEADER */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <p className="font-semibold text-lg">
+                        Order #{order._id.slice(-6)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`text-xs px-3 py-1 rounded-full font-medium
+                        ${
+                          order.status === "Placed"
+                            ? "bg-blue-100 text-blue-700"
+                            : order.status === "Delivered"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                    >
+                      {order.status}
+                    </span>
+                  </div>
+
+                  {/* ITEM INFO */}
+                  {item && (
+                    <div className="flex gap-4 items-center">
+                      <img
+                        src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
+                        alt={item.title}
+                        className="w-24 h-24 object-cover rounded-lg border"
+                      />
+
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {item.brand}
+                        </p>
+                        <p className="mt-1 font-bold">
+                          ${order.totalAmount}
+                        </p>
+                      </div>
+
+                      {/* ACTIONS */}
+                      {order.status === "Placed" && (
+                        <button
+                          onClick={() =>
+                            handleCancelOrder(order._id)
+                          }
+                          className="text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
-
       </div>
     </div>
   );

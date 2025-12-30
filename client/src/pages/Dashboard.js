@@ -34,9 +34,7 @@ const Dashboard = () => {
       const res = await fetch(
         `${process.env.REACT_APP_BASE_URL}/api/items/my-items`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await res.json();
@@ -55,9 +53,7 @@ const Dashboard = () => {
       const res = await fetch(
         `${process.env.REACT_APP_BASE_URL}/api/orders/my`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await res.json();
@@ -76,9 +72,7 @@ const Dashboard = () => {
       const res = await fetch(
         `${process.env.REACT_APP_BASE_URL}/api/wishlist`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const data = await res.json();
@@ -123,7 +117,6 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-6xl mx-auto pt-28 px-4">
-
       {/* ---------------- PROFILE HEADER ---------------- */}
       <div className="bg-white rounded-2xl shadow border p-6 flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -185,7 +178,6 @@ const Dashboard = () => {
 
       {/* ---------------- TAB CONTENT ---------------- */}
       <div className="mt-10 min-h-[300px]">
-
         {loading && (
           <p className="text-center text-gray-500">Loading...</p>
         )}
@@ -221,7 +213,7 @@ const Dashboard = () => {
               {orders.flatMap((order) =>
                 order.items.map((i) => (
                   <ItemCard
-                    key={i.item._id}
+                    key={`${order._id}-${i.item._id}`}   // ✅ UNIQUE KEY
                     item={i.item}
                     hideWishlist
                   />
@@ -239,17 +231,16 @@ const Dashboard = () => {
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-              {wishlist.map((item) => (
+              {wishlist.map((entry) => (
                 <ItemCard
-                  key={item._id}
-                  item={item}
+                  key={entry.item._id}
+                  item={entry.item}   // ✅ CORRECT DATA SHAPE
                   hideWishlist
                 />
               ))}
             </div>
           )
         )}
-
       </div>
 
       {/* ---------------- LOGOUT ---------------- */}

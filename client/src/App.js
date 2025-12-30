@@ -49,7 +49,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/orders" element={<Orders />} />
-
+          <Route path="/orders/:id" element={<Orders />} />
         </Routes>
       </div>
       <Footer />

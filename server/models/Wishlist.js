@@ -7,15 +7,14 @@ const wishlistSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    item: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Item",
-      required: true,
-    },
+    items: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Item",
+      },
+    ],
   },
   { timestamps: true }
 );
-
-wishlistSchema.index({ user: 1, item: 1 }, { unique: true });
 
 module.exports = mongoose.model("Wishlist", wishlistSchema);

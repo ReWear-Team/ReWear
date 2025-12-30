@@ -18,6 +18,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/cart', require('./routes/orderRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+app.use("/api/cart", require("./routes/cartRoutes"));
 
 // DB Connect
 mongoose.connect(process.env.MONGO_URI)

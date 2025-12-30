@@ -1,31 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useCallback, useMemo} from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { FiHeart, FiMessageCircle } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 const SingleItem = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [item, setItem] = useState(null);
   const [discount, setDiscount] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchItem = async () => {
-      const res = await fetch( `${process.env.REACT_APP_BASE_URL}/api/items/${id}`);
-      const data = await res.json();
-      setItem(data);
-      setDiscount(Math.floor(Math.random() * 40 + 10));
-    };
-
-    fetchItem();
-  }, [id]);
-
-  if (!item)
-    return <div className="pt-32 text-center text-gray-500">Loading...</div>;
-
-  const oldPrice = Math.round(item.price + item.price * (discount / 100));
   const token = localStorage.getItem("token");
-  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const authHeaders = useMemo(() => {
+  return token
+    ? {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    : {
+        "Content-Type": "application/json",
+      };
+}, [token]);
+
 
   const requireLogin = () => {
     if (!token) {
@@ -35,127 +34,234 @@ const SingleItem = () => {
     return true;
   };
 
+  // ===============================
+  // CHECK WISHLIST (SAFE)
+  // ===============================
+ const checkWishlist = useCallback(
+  async (itemId) => {
+    if (!token) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/wishlist/check/${itemId}`,
+        { headers: authHeaders }
+      );
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setWishlisted(!!data.isWishlisted);
+    } catch {
+    }
+  },
+  [token, authHeaders]
+);
+
+
+  // ===============================
+  // FETCH ITEM
+  // ===============================
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/api/items/${id}`
+        );
+
+        if (!res.ok) {
+          toast.error("Item not found");
+          return;
+        }
+
+        const data = await res.json();
+        setItem(data);
+        setDiscount(Math.floor(Math.random() * 40 + 10));
+
+        if (token && data?._id) {
+          checkWishlist(data._id);
+        }
+      } catch {
+        toast.error("Failed to load item");
+      }
+    };
+
+    fetchItem();
+  }, [id, token, checkWishlist]);
+
+  if (!item) {
+    return (
+      <div className="pt-32 text-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
+
+  const oldPrice = Math.round(
+    item.price + item.price * (discount / 100)
+  );
+
+  // ===============================
   // BUY NOW
+  // ===============================
   const handleBuyNow = async () => {
     if (!requireLogin()) return;
 
-    const res = await fetch(
-       `${process.env.REACT_APP_BASE_URL}/api/items/buy/${item._id}`,
-      { method: "PATCH", headers: authHeader }
-    );
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/orders`,
+        {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            items: [
+              {
+                itemId: item._id,
+                price: item.price,
+              },
+            ],
+          }),
+        }
+      );
 
-    const data = await res.json();
-    toast.success(data.msg);
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.msg || "Order failed");
+        return;
+      }
+
+      toast.success("Order placed successfully 🎉");
+      navigate(`/orders/${data._id}`);
+    } catch {
+      toast.error("Server error");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ===============================
   // ADD TO CART
+  // ===============================
   const handleAddToCart = async () => {
     if (!requireLogin()) return;
 
-    const res = await fetch(
-      `${process.env.REACT_APP_BASE_URL}/api/cart/add/${item._id}`,
-      { method: "POST", headers: authHeader }
-    );
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/cart/add/${item._id}`,
+        {
+          method: "POST",
+          headers: authHeaders,
+        }
+      );
 
-    const data = await res.json();
-    toast.success(data.msg);
+      if (!res.ok) {
+        toast.error("Cart route not found");
+        return;
+      }
+
+      toast.success("Added to cart 🛒");
+    } catch {
+      toast.error("Server error");
+    }
   };
 
-  // ADD / REMOVE WISHLIST
+  // ===============================
+  // WISHLIST TOGGLE
+  // ===============================
   const handleWishlist = async () => {
     if (!requireLogin()) return;
 
-    const endpoint = wishlisted
-      ?  `${process.env.REACT_APP_BASE_URL}/api/wishlist/remove/${item._id}`
-      :  `${process.env.REACT_APP_BASE_URL}/api/wishlist/add/${item._id}`;
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/wishlist/toggle/${item._id}`,
+        {
+          method: "POST",
+          headers: authHeaders,
+        }
+      );
 
-    const method = wishlisted ? "DELETE" : "POST";
+      if (!res.ok) {
+        toast.error("Wishlist route not found");
+        return;
+      }
 
-    const res = await fetch(endpoint, { method, headers: authHeader });
-    const data = await res.json();
+      const data = await res.json();
+      setWishlisted(data.isWishlisted);
 
-    toast.success(data.msg);
-    setWishlisted(!wishlisted);
+      toast.success(
+        data.isWishlisted
+          ? "Added to wishlist ❤️"
+          : "Removed from wishlist"
+      );
+    } catch {
+      toast.error("Server error");
+    }
   };
 
+  // ===============================
   // MESSAGE SELLER
+  // ===============================
   const handleMessageSeller = async () => {
-  if (!requireLogin()) return;
+    if (!requireLogin()) return;
 
-  if (!item?.owner) {
-    toast.error("Seller information not available");
-    return;
-  }
+    if (!item?.owner) {
+      toast.error("Seller not available");
+      return;
+    }
 
-  const receiverId =
-    typeof item.owner === "object" ? item.owner._id : item.owner;
+    const receiverId =
+      typeof item.owner === "object" ? item.owner._id : item.owner;
 
-  if (!receiverId) {
-    toast.error("Invalid seller");
-    return;
-  }
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/api/chat/send`,
+        {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            receiver: receiverId,
+            item: item._id,
+            message: "Hi! Is this item still available?",
+          }),
+        }
+      );
 
-  const res = await fetch( `${process.env.REACT_APP_BASE_URL}/api/chat/send`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader,
-    },
-    body: JSON.stringify({
-      receiver: receiverId,
-      item: item._id,
-      message: "Hi! Is this item still available?",
-    }),
-  });
+      if (!res.ok) {
+        toast.error("Failed to send message");
+        return;
+      }
 
-  const data = await res.json();
-
-  if (!res.ok) {
-    toast.error(data.msg || "Failed to send message");
-    return;
-  }
-
-  toast.success("Message sent to seller");
-};
+      toast.success("Message sent to seller");
+    } catch {
+      toast.error("Server error");
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto pt-28 px-6 mb-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* IMAGE */}
+        <div className="relative bg-white p-4 rounded-2xl shadow">
+          <span className="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+            {item.condition}
+          </span>
 
-       {/* LEFT IMAGE */}
-<div className="relative bg-white p-4 rounded-2xl shadow">
-  <span className="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full z-10">
-    {item.condition}
-  </span>
+          <span className="absolute top-12 left-4 bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+            -{discount}% OFF
+          </span>
 
-  <span className="absolute top-12 left-4 bg-orange-500 text-white text-xs px-3 py-1 rounded-full z-10">
-    -{discount}% OFF
-  </span>
-
-  {/* FIXED IMAGE CONTAINER */}
-  <div className="w-full aspect-[8/9] overflow-hidden rounded-xl bg-gray-100">
-    <img
-      src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
-      alt={item.title}
-      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-    />
-  </div>
-</div>
-
-
-        {/* RIGHT SECTION */}
-        <div className="space-y-6">
-          {/* Seller */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-            <div>
-              <p className="font-semibold">Seller</p>
-              <span className="text-gray-500 text-sm cursor-pointer">
-                View Profile
-              </span>
-            </div>
+          <div className="w-full aspect-[8/9] overflow-hidden rounded-xl bg-gray-100">
+            <img
+              src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
           </div>
+        </div>
 
+        {/* DETAILS */}
+        <div className="space-y-6">
           <h1 className="text-3xl font-bold">{item.title}</h1>
           <p className="text-gray-600">{item.brand}</p>
 
@@ -164,29 +270,27 @@ const SingleItem = () => {
             <span className="line-through text-gray-400">${oldPrice}</span>
           </div>
 
-          <div>
-            <h2 className="font-semibold text-lg">Description</h2>
-            <p className="text-gray-600 mt-1">{item.description}</p>
-          </div>
+          <p className="text-gray-600">{item.description}</p>
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleBuyNow}
-              className="bg-[#cf6a4d] text-white px-6 py-3 rounded-lg hover:bg-[#b85a3e]"
-            >
-              Buy Now
-            </button>
+           <button
+  onClick={handleBuyNow}
+  className="bg-[#cf6a4d] text-white px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loading ? "Processing..." : "Buy Now"}
+</button>
+
 
             <button
               onClick={handleAddToCart}
-              className="bg-white border px-6 py-3 rounded-lg hover:bg-gray-50"
+              className="bg-white border px-6 py-3 rounded-lg"
             >
               Add to Cart
             </button>
 
             <button
               onClick={handleWishlist}
-              className="p-3 border rounded-lg hover:bg-gray-100"
+              className="p-3 border rounded-lg"
             >
               <FiHeart
                 className={`text-xl ${
@@ -198,25 +302,10 @@ const SingleItem = () => {
 
           <button
             onClick={handleMessageSeller}
-            className="w-full bg-green-100 text-green-700 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-green-200"
+            className="w-full bg-green-100 text-green-700 py-3 rounded-lg flex items-center justify-center gap-2"
           >
             <FiMessageCircle /> Message Seller
           </button>
-
-          <div className="grid grid-cols-3 text-center mt-4 text-gray-600">
-            <div>
-              <p className="text-xl">🛡️</p>
-              Buyer Protection
-            </div>
-            <div>
-              <p className="text-xl">🚚</p>
-              Fast Shipping
-            </div>
-            <div>
-              <p className="text-xl">🔄</p>
-              Easy Returns
-            </div>
-          </div>
         </div>
       </div>
     </div>
