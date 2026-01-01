@@ -135,7 +135,7 @@ const Orders = () => {
                   {item && (
                     <div className="flex gap-4 items-center">
                       <img
-                        src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
+                        src={item.imageUrl}
                         alt={item.title}
                         className="w-24 h-24 object-cover rounded-lg border"
                       />

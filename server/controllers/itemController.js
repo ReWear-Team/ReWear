@@ -1,6 +1,9 @@
 const Item = require("../models/Item");
 const User = require("../models/User");
 
+// ===============================
+// GET PLATFORM STATS
+// ===============================
 const getStats = async (req, res) => {
   try {
     const totalItems = await Item.countDocuments();
@@ -29,7 +32,7 @@ const getStats = async (req, res) => {
 };
 
 // ===============================
-// ADD NEW ITEM
+// ADD NEW ITEM (CLOUDINARY SAFE)
 // ===============================
 const addItem = async (req, res) => {
   try {
@@ -52,21 +55,19 @@ const addItem = async (req, res) => {
       return res.status(400).json({ msg: "All required fields must be filled" });
     }
 
-    const newItem = new Item({
+    const newItem = await Item.create({
       title,
       brand,
       price,
-      originalPrice: originalPrice || price, // ✅ fallback
+      originalPrice: originalPrice || price,
       size,
       category,
       condition,
       description,
-      imageUrl: `/uploads/${req.file.filename}`,
-      owner: req.user, // ✅ actual seller
+      imageUrl: req.file.path,
+      owner: req.user,
       status: "Available",
     });
-
-    await newItem.save();
 
     res.status(201).json(newItem);
   } catch (err) {
@@ -76,9 +77,8 @@ const addItem = async (req, res) => {
 };
 
 // ===============================
-// GET ALL ITEMS
+// GET ALL AVAILABLE ITEMS (SEARCH)
 // ===============================
-// GET ALL ITEMS (with search)
 const getItems = async (req, res) => {
   try {
     const { search } = req.query;
@@ -93,8 +93,7 @@ const getItems = async (req, res) => {
       ];
     }
 
-    const items = await Item.find(query)
-      .sort({ createdAt: -1 });
+    const items = await Item.find(query).sort({ createdAt: -1 });
 
     res.json(items);
   } catch (err) {
@@ -103,7 +102,6 @@ const getItems = async (req, res) => {
   }
 };
 
-
 // ===============================
 // GET FEATURED ITEMS
 // ===============================
@@ -111,8 +109,8 @@ const getFeaturedItems = async (req, res) => {
   try {
     const items = await Item.find({ status: "Available" })
       .populate("owner", "name")
-      .sort({ createdAt: -1 })   // newest first
-      .limit(9);                 // homepage-friendly
+      .sort({ createdAt: -1 })
+      .limit(9);
 
     res.json(items);
   } catch (err) {
@@ -121,14 +119,15 @@ const getFeaturedItems = async (req, res) => {
   }
 };
 
-
 // ===============================
 // GET ITEM BY ID
 // ===============================
 const getItemById = async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id)
-      .populate("owner", "name email");
+    const item = await Item.findById(req.params.id).populate(
+      "owner",
+      "name email"
+    );
 
     if (!item) {
       return res.status(404).json({ msg: "Item not found" });
@@ -146,8 +145,9 @@ const getItemById = async (req, res) => {
 // ===============================
 const getMyItems = async (req, res) => {
   try {
-    const items = await Item.find({ owner: req.user })
-      .sort({ createdAt: -1 });
+    const items = await Item.find({ owner: req.user }).sort({
+      createdAt: -1,
+    });
 
     res.json(items);
   } catch (err) {

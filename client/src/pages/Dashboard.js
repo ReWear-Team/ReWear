@@ -213,7 +213,7 @@ const Dashboard = () => {
               {orders.flatMap((order) =>
                 order.items.map((i) => (
                   <ItemCard
-                    key={`${order._id}-${i.item._id}`}   // ✅ UNIQUE KEY
+                    key={`${order._id}-${i.item._id}`}   
                     item={i.item}
                     hideWishlist
                   />
@@ -234,7 +234,7 @@ const Dashboard = () => {
               {wishlist.map((entry) => (
                 <ItemCard
                   key={entry.item._id}
-                  item={entry.item}   // ✅ CORRECT DATA SHAPE
+                  item={entry.item}   
                   hideWishlist
                 />
               ))}

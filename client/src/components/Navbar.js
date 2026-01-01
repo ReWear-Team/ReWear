@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HiMenu, HiX } from "react-icons/hi";
-import { FiHeart, FiShoppingBag, FiUser } from "react-icons/fi";
+import {
+  FiHeart,
+  FiShoppingBag,
+  FiUser,
+  FiPackage,
+} from "react-icons/fi";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -44,7 +49,9 @@ const Navbar = () => {
             <div className="w-9 h-9 bg-[#d46b4a] rounded-full flex items-center justify-center text-white font-bold">
               R
             </div>
-            <span className="text-xl font-semibold text-gray-800">Re–Wear</span>
+            <span className="text-xl font-semibold text-gray-800">
+              Re–Wear
+            </span>
           </Link>
 
           {/* DESKTOP MENU */}
@@ -56,24 +63,45 @@ const Navbar = () => {
 
           {/* DESKTOP SEARCH */}
           <input
-  type="text"
-  placeholder="Search items, brands..."
-  className="hidden md:block w-72 bg-gray-100 px-4 py-2 rounded-xl outline-none"
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && e.target.value.trim()) {
-      navigate(`/explore?search=${e.target.value.trim()}`);
-      e.target.value = "";
-    }
-  }}
-/>
-
+            type="text"
+            placeholder="Search items, brands..."
+            className="hidden md:block w-72 bg-gray-100 px-4 py-2 rounded-xl outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.value.trim()) {
+                navigate(`/explore?search=${e.target.value.trim()}`);
+                e.target.value = "";
+              }
+            }}
+          />
 
           {/* DESKTOP ICONS */}
           <div className="hidden md:flex items-center space-x-6 text-gray-700">
-            <FiHeart className="text-2xl cursor-pointer" onClick={() => navigate("/wishlist")} />
-            <FiShoppingBag className="text-2xl cursor-pointer" onClick={() => navigate("/orders")} />
-            <FiUser className="text-2xl cursor-pointer" onClick={handleUserIcon} />
 
+            {/* Wishlist */}
+            <FiHeart
+              className="text-2xl cursor-pointer"
+              onClick={() => navigate("/wishlist")}
+            />
+
+            {/* Cart (AMAZON STYLE) */}
+            <FiShoppingBag
+              className="text-2xl cursor-pointer"
+              onClick={() => navigate(`/cart`)}
+            />
+
+            {/* Orders (SEPARATE ICON) */}
+            <FiPackage
+              className="text-2xl cursor-pointer"
+              onClick={() => navigate("/orders")}
+            />
+
+            {/* Profile */}
+            <FiUser
+              className="text-2xl cursor-pointer"
+              onClick={handleUserIcon}
+            />
+
+            {/* Sell */}
             <Link
               to="/add-item"
               className="bg-[#d46b4a] hover:bg-[#bf5839] text-white px-4 py-2 rounded-lg font-medium"
@@ -106,10 +134,13 @@ const Navbar = () => {
         ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="p-6 pt-16 flex flex-col gap-5 text-lg font-medium text-gray-700">
+
           <MobileNav to="/explore" setOpen={setOpen}>Explore</MobileNav>
           <MobileNav to="/categories" setOpen={setOpen}>Categories</MobileNav>
           <MobileNav to="/how-it-works" setOpen={setOpen}>How it Works</MobileNav>
+
           <MobileNav to="/wishlist" setOpen={setOpen}>Wishlist</MobileNav>
+          <MobileNav to="/cart" setOpen={setOpen}>Cart</MobileNav>
           <MobileNav to="/orders" setOpen={setOpen}>Orders</MobileNav>
 
           <button onClick={handleUserIcon} className="text-left">

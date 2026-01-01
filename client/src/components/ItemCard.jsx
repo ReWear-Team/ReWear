@@ -22,7 +22,7 @@ const ItemCard = ({ item }) => {
         <div className="relative">
           <div className="overflow-hidden rounded-xl aspect-[3/4] bg-gray-100">
             <img
-              src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
+              src={item.imageUrl}
               alt={item.title}
               className="w-full h-full object-cover transition duration-500 hover:scale-110"
             />

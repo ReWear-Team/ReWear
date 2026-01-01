@@ -14,7 +14,6 @@ app.use(express.json());
 app.use('/api/items', require('./routes/itemRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/cart', require('./routes/orderRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));

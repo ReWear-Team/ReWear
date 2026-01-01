@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback, useMemo} from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { FiHeart, FiMessageCircle } from "react-icons/fi";
+import { FiShield, FiTruck, FiRefreshCcw } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 const SingleItem = () => {
@@ -11,20 +12,21 @@ const SingleItem = () => {
   const [discount, setDiscount] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+
 
   const token = localStorage.getItem("token");
 
-  const authHeaders = useMemo(() => {
-  return token
-    ? {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      }
-    : {
-        "Content-Type": "application/json",
-      };
-}, [token]);
-
+  const authHeaders = useMemo(
+    () =>
+      token
+        ? {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          }
+        : { "Content-Type": "application/json" },
+    [token]
+  );
 
   const requireLogin = () => {
     if (!token) {
@@ -35,28 +37,23 @@ const SingleItem = () => {
   };
 
   // ===============================
-  // CHECK WISHLIST (SAFE)
+  // CHECK WISHLIST
   // ===============================
- const checkWishlist = useCallback(
-  async (itemId) => {
-    if (!token) return;
-
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/api/wishlist/check/${itemId}`,
-        { headers: authHeaders }
-      );
-
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setWishlisted(!!data.isWishlisted);
-    } catch {
-    }
-  },
-  [token, authHeaders]
-);
-
+  const checkWishlist = useCallback(
+    async (itemId) => {
+      if (!token) return;
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_BASE_URL}/api/wishlist/check/${itemId}`,
+          { headers: authHeaders }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        setWishlisted(!!data.isWishlisted);
+      } catch {}
+    },
+    [token, authHeaders]
+  );
 
   // ===============================
   // FETCH ITEM
@@ -67,12 +64,10 @@ const SingleItem = () => {
         const res = await fetch(
           `${process.env.REACT_APP_BASE_URL}/api/items/${id}`
         );
-
         if (!res.ok) {
           toast.error("Item not found");
           return;
         }
-
         const data = await res.json();
         setItem(data);
         setDiscount(Math.floor(Math.random() * 40 + 10));
@@ -84,16 +79,11 @@ const SingleItem = () => {
         toast.error("Failed to load item");
       }
     };
-
     fetchItem();
   }, [id, token, checkWishlist]);
 
   if (!item) {
-    return (
-      <div className="pt-32 text-center text-gray-500">
-        Loading...
-      </div>
-    );
+    return <div className="pt-32 text-center text-gray-500">Loading...</div>;
   }
 
   const oldPrice = Math.round(
@@ -114,18 +104,12 @@ const SingleItem = () => {
           method: "POST",
           headers: authHeaders,
           body: JSON.stringify({
-            items: [
-              {
-                itemId: item._id,
-                price: item.price,
-              },
-            ],
+            items: [{ itemId: item._id, price: item.price }],
           }),
         }
       );
 
       const data = await res.json();
-
       if (!res.ok) {
         toast.error(data.msg || "Order failed");
         return;
@@ -143,52 +127,56 @@ const SingleItem = () => {
   // ===============================
   // ADD TO CART
   // ===============================
-  const handleAddToCart = async () => {
-    if (!requireLogin()) return;
+const handleAddToCart = async () => {
+  if (!requireLogin()) return;
 
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/api/cart/add/${item._id}`,
-        {
-          method: "POST",
-          headers: authHeaders,
-        }
-      );
+  if (!item?._id) {
+    toast.error("Item not ready");
+    return;
+  }
 
-      if (!res.ok) {
-        toast.error("Cart route not found");
-        return;
+  setCartLoading(true);
+
+  try {
+    const res = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/api/cart/add/${item._id}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      toast.success("Added to cart 🛒");
-    } catch {
-      toast.error("Server error");
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data?.msg || "Failed to add to cart");
+      return;
     }
-  };
+
+    toast.success("Added to cart 🛒");
+    navigate("/cart");
+  } catch (err) {
+    console.error(err);
+    toast.error("Server error");
+  } finally {
+    setCartLoading(false);
+  }
+};
 
   // ===============================
-  // WISHLIST TOGGLE
+  // WISHLIST
   // ===============================
   const handleWishlist = async () => {
     if (!requireLogin()) return;
-
     try {
       const res = await fetch(
         `${process.env.REACT_APP_BASE_URL}/api/wishlist/toggle/${item._id}`,
-        {
-          method: "POST",
-          headers: authHeaders,
-        }
+        { method: "POST", headers: authHeaders }
       );
-
-      if (!res.ok) {
-        toast.error("Wishlist route not found");
-        return;
-      }
-
       const data = await res.json();
       setWishlisted(data.isWishlisted);
-
       toast.success(
         data.isWishlisted
           ? "Added to wishlist ❤️"
@@ -205,32 +193,21 @@ const SingleItem = () => {
   const handleMessageSeller = async () => {
     if (!requireLogin()) return;
 
-    if (!item?.owner) {
+    if (!item?.owner?._id) {
       toast.error("Seller not available");
       return;
     }
 
-    const receiverId =
-      typeof item.owner === "object" ? item.owner._id : item.owner;
-
     try {
-      const res = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/api/chat/send`,
-        {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({
-            receiver: receiverId,
-            item: item._id,
-            message: "Hi! Is this item still available?",
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        toast.error("Failed to send message");
-        return;
-      }
+      await fetch(`${process.env.REACT_APP_BASE_URL}/api/chat/send`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          receiver: item.owner._id,
+          item: item._id,
+          message: "Hi! Is this item still available?",
+        }),
+      });
 
       toast.success("Message sent to seller");
     } catch {
@@ -239,59 +216,86 @@ const SingleItem = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pt-28 px-6 mb-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div className="max-w-7xl mx-auto pt-28 px-6 mb-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
         {/* IMAGE */}
-        <div className="relative bg-white p-4 rounded-2xl shadow">
-          <span className="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
-            {item.condition}
-          </span>
-
-          <span className="absolute top-12 left-4 bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+        <div className="relative">
+          <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs px-3 py-1 rounded-full z-10">
             -{discount}% OFF
           </span>
 
-          <div className="w-full aspect-[8/9] overflow-hidden rounded-xl bg-gray-100">
+          <div className="w-full aspect-[3/4] overflow-hidden rounded-2xl shadow-md bg-gray-100">
             <img
-              src={`${process.env.REACT_APP_BASE_URL}${item.imageUrl}`}
+              src={item.imageUrl}
               alt={item.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top transition duration-500 hover:scale-105"
+              loading="lazy"
             />
           </div>
         </div>
 
         {/* DETAILS */}
         <div className="space-y-6">
+          {/* SELLER */}
+          {item.owner && (
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  item.owner.avatar ||
+                  "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(item.owner.name)
+                }
+                alt={item.owner.name}
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <p className="text-sm font-semibold">{item.owner.name}</p>
+                <Link
+                  to={`/user/${item.owner._id}`}
+                  className="text-xs text-gray-500 hover:underline"
+                >
+                  View profile
+                </Link>
+              </div>
+            </div>
+          )}
+
           <h1 className="text-3xl font-bold">{item.title}</h1>
-          <p className="text-gray-600">{item.brand}</p>
+          <p className="text-gray-600">{item.category}</p>
 
           <div className="flex items-center gap-3">
             <span className="text-3xl font-bold">${item.price}</span>
             <span className="line-through text-gray-400">${oldPrice}</span>
           </div>
 
-          <p className="text-gray-600">{item.description}</p>
+          <div>
+            <h3 className="font-semibold mb-1">Description</h3>
+            <p className="text-gray-600">{item.description}</p>
+          </div>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={handleBuyNow}
+              disabled={loading}
+              className="bg-[#cf6a4d] text-white px-8 py-3 rounded-lg disabled:opacity-50"
+            >
+              {loading ? "Processing..." : "Buy Now"}
+            </button>
+
            <button
-  onClick={handleBuyNow}
-  className="bg-[#cf6a4d] text-white px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+  onClick={handleAddToCart}
+  disabled={cartLoading}
+  className={`border px-6 py-3 rounded-lg transition
+    ${cartLoading
+      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+      : "bg-white hover:bg-gray-50"}
+  `}
 >
-  {loading ? "Processing..." : "Buy Now"}
+  {cartLoading ? "Adding…" : "Add to Cart"}
 </button>
 
 
-            <button
-              onClick={handleAddToCart}
-              className="bg-white border px-6 py-3 rounded-lg"
-            >
-              Add to Cart
-            </button>
-
-            <button
-              onClick={handleWishlist}
-              className="p-3 border rounded-lg"
-            >
+            <button onClick={handleWishlist} className="p-3 border rounded-lg">
               <FiHeart
                 className={`text-xl ${
                   wishlisted ? "text-red-500" : "text-gray-700"
@@ -306,6 +310,25 @@ const SingleItem = () => {
           >
             <FiMessageCircle /> Message Seller
           </button>
+
+          {/* TRUST STRIP */}
+          <div className="grid grid-cols-3 gap-6 pt-8 border-t text-center">
+  <div className="flex flex-col items-center gap-2 text-gray-600">
+    <FiShield className="text-2xl text-green-600" />
+    <span className="text-sm font-medium">Buyer Protection</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-2 text-gray-600">
+    <FiTruck className="text-2xl text-blue-600" />
+    <span className="text-sm font-medium">Fast Shipping</span>
+  </div>
+
+  <div className="flex flex-col items-center gap-2 text-gray-600">
+    <FiRefreshCcw className="text-2xl text-orange-500" />
+    <span className="text-sm font-medium">Easy Returns</span>
+  </div>
+</div>
+
         </div>
       </div>
     </div>
