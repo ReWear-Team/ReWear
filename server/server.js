@@ -14,10 +14,9 @@ app.use(express.json());
 app.use('/api/items', require('./routes/itemRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));
-app.use('/api/cart', require('./routes/orderRoutes'));
+app.use("/api/cart", require("./routes/cartRoutes"));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
-app.use("/api/cart", require("./routes/cartRoutes"));
 
 // DB Connect
 mongoose.connect(process.env.MONGO_URI)

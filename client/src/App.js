@@ -23,6 +23,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Contact from "./pages/Contact";
 import Orders from "./pages/Orders";
 import Cart from "./pages/Cart";
+import OrderDetails from "./pages/OrderDetails";
+
+
 
 function App() {
   return (
@@ -52,6 +55,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:id" element={<Orders />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />  
             <Route path="/cart" element={<Cart />} />
           </Routes>
         </main>

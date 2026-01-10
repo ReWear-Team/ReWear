@@ -7,7 +7,6 @@ const {
   approveItem,
 } = require('../controllers/adminController');
 
-// Only logged-in admin users can access these
 router.get('/pending-items', protect, adminOnly, getPendingItems);
 router.patch('/approve-item/:id', protect, adminOnly, approveItem);
 
