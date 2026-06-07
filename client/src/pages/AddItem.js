@@ -77,6 +77,36 @@ const AddItem = () => {
     }
   };
 
+  const generateWithAI = async () => {
+  try {
+    if (!form.title) {
+      alert("Please enter a title first");
+      return;
+    }
+
+    const response = await axios.post(
+      `${process.env.REACT_APP_BASE_URL}/api/ai/generate-description`,
+      {
+        title: form.title,
+        category: form.category,
+        condition: form.condition,
+      }
+    );
+
+    if (response.data.success) {
+      setForm((prev) => ({
+        ...prev,
+        title: response.data.data.title,
+        description: response.data.data.description,
+      }));
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate AI description");
+  }
+};
+  
+
   return (
     <div className="pt-28 px-6 bg-gray-50 min-h-screen">
       <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow">
@@ -89,15 +119,25 @@ const AddItem = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
-          <input
-            type="text"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            placeholder="Title"
-            className="w-full px-4 py-3 border rounded-lg"
-            required
-          />
+         <div>
+  <input
+    type="text"
+    name="title"
+    value={form.title}
+    onChange={handleChange}
+    placeholder="Title"
+    className="w-full px-4 py-3 border rounded-lg"
+    required
+  />
+
+  <button
+    type="button"
+    onClick={generateWithAI}
+    className="mt-3 bg-purple-600 text-white px-4 py-2 rounded-lg"
+  >
+    ✨ Generate Description with AI
+  </button>
+</div>
 
           {/* Brand */}
           <input

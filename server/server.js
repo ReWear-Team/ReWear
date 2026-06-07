@@ -17,6 +17,8 @@ app.use('/api/wishlist', require('./routes/wishlistRoutes'));
 app.use("/api/cart", require("./routes/cartRoutes"));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
+
 
 // DB Connect
 mongoose.connect(process.env.MONGO_URI)
