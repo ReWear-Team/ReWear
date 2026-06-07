@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
   generateDescription,
+  smartSearchKeywords
 } = require("../controllers/aiController");
 
 router.post("/generate-description", generateDescription);
